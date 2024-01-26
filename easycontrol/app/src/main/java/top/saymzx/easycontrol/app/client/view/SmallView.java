@@ -5,8 +5,8 @@ import android.graphics.Outline;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.text.InputType;
-import android.util.Log;
 import android.util.Pair;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -39,8 +39,8 @@ public class SmallView extends ViewOutlineProvider {
       PixelFormat.TRANSLUCENT
     );
 
-  private static final int LayoutParamsFlagFocus = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
-  private static final int LayoutParamsFlagNoFocus = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+  private static final int LayoutParamsFlagFocus = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
+  private static final int LayoutParamsFlagNoFocus = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 
   public SmallView(ClientView clientView) {
     this.clientView = clientView;
@@ -88,7 +88,7 @@ public class SmallView extends ViewOutlineProvider {
   // 设置焦点监听
   @SuppressLint("ClickableViewAccessibility")
   private void setFloatVideoListener() {
-    boolean defaultMiniOnOutside = AppData.setting.getDefaultMiniOnOutside();
+    boolean defaultMiniOnOutside = AppData.setting.getAutoMiniOnOutside();
     smallView.getRoot().setOnTouchHandle(event -> {
       if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
         if (defaultMiniOnOutside) clientView.changeToMini();
@@ -165,11 +165,11 @@ public class SmallView extends ViewOutlineProvider {
     smallView.buttonFull.setOnClickListener(v -> clientView.changeToFull());
     smallView.buttonClose.setOnClickListener(v -> clientView.onClose.run());
     smallView.buttonLight.setOnClickListener(v -> {
-      controlPacket.sendLightEvent(1);
+      controlPacket.sendLightEvent(Display.STATE_ON);
       changeBarView();
     });
     smallView.buttonLightOff.setOnClickListener(v -> {
-      controlPacket.sendLightEvent(0);
+      controlPacket.sendLightEvent(Display.STATE_UNKNOWN);
       changeBarView();
     });
     smallView.buttonPower.setOnClickListener(v -> {
@@ -213,8 +213,11 @@ public class SmallView extends ViewOutlineProvider {
   private void setKeyEvent(ControlPacket controlPacket) {
     smallView.editText.setInputType(InputType.TYPE_NULL);
     smallView.editText.setOnKeyListener((v, keyCode, event) -> {
-      if (event.getAction() == KeyEvent.ACTION_DOWN) controlPacket.sendKeyEvent(event.getKeyCode(), event.getMetaState());
-      return true;
+      if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
+        controlPacket.sendKeyEvent(event.getKeyCode(), event.getMetaState());
+        return true;
+      }
+      return false;
     });
   }
 

@@ -11,7 +11,6 @@ import android.view.Surface;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 @SuppressLint("PrivateApi")
 public final class SurfaceControl {
@@ -69,7 +68,7 @@ public final class SurfaceControl {
   }
 
   public static void setDisplaySurface(IBinder displayToken, Surface surface) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-     CLASS.getMethod("setDisplaySurface", IBinder.class, Surface.class).invoke(null, displayToken, surface);
+    CLASS.getMethod("setDisplaySurface", IBinder.class, Surface.class).invoke(null, displayToken, surface);
   }
 
   public static IBinder createDisplay(String name, boolean secure) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -84,7 +83,7 @@ public final class SurfaceControl {
     try {
       if (getBuiltInDisplayMethod == null) getBuiltInDisplayMethod = CLASS.getMethod("getBuiltInDisplay", int.class);
       return (IBinder) getBuiltInDisplayMethod.invoke(null, 0);
-    } catch (Exception ignroed) {
+    } catch (Exception ignored) {
       return null;
     }
   }

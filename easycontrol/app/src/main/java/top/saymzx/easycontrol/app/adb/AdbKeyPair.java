@@ -1,8 +1,5 @@
 package top.saymzx.easycontrol.app.adb;
 
-import android.util.Log;
-import android.widget.Toast;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -18,8 +15,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import javax.crypto.Cipher;
-
-import top.saymzx.easycontrol.app.entity.AppData;
 
 public class AdbKeyPair {
 
@@ -45,12 +40,13 @@ public class AdbKeyPair {
 
   public static AdbKeyPair read(File privateKey, File publicKey) throws Exception {
     if (adbBase64 == null) throw new IOException("no adbBase64");
-    byte[] publicKeyBytes = new byte[(int) publicKey.length()];
+    byte[] publicKeyBytes = new byte[(int) publicKey.length() + 1];
     byte[] privateKeyBytes = new byte[(int) privateKey.length()];
     PrivateKey tmpPrivateKey;
 
     try (FileInputStream stream = new FileInputStream(publicKey)) {
       stream.read(publicKeyBytes);
+      publicKeyBytes[publicKeyBytes.length - 1] = 0;
     }
     try (FileInputStream stream = new FileInputStream(privateKey)) {
       stream.read(privateKeyBytes);

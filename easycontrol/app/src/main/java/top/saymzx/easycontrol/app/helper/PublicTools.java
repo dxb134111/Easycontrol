@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.net.DhcpInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
@@ -88,7 +90,7 @@ public class PublicTools {
   // 创建弹窗
   public static Dialog createDialog(Context context, boolean canCancel, View view) {
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-    builder.setCancelable(true);
+    builder.setCancelable(canCancel);
     ScrollView dialogView = ModuleDialogBinding.inflate(LayoutInflater.from(context)).getRoot();
     dialogView.addView(view);
     builder.setView(dialogView);
@@ -176,9 +178,7 @@ public class PublicTools {
   }
 
   // 创建Client加载框
-  public static Dialog createClientLoading(
-    Context context
-  ) {
+  public static Dialog createClientLoading(Context context) {
     ItemLoadingBinding loadingView = ItemLoadingBinding.inflate(LayoutInflater.from(context));
     return createDialog(context, false, loadingView.getRoot());
   }
@@ -190,7 +190,7 @@ public class PublicTools {
     MyFunction function
   ) {
     ItemTextBinding textView = ItemTextBinding.inflate(LayoutInflater.from(context));
-    textView.getRoot().setText(text);
+    textView.text.setText(text);
     if (function != null) textView.getRoot().setOnClickListener(v -> function.run());
     return textView;
   }
@@ -338,6 +338,19 @@ public class PublicTools {
       }
     }
     return builder.toString();
+  }
+
+  // 浏览器打开
+  public static void startUrl(Context context, String url) {
+    try {
+      Intent intent = new Intent(Intent.ACTION_VIEW);
+      intent.addCategory(Intent.CATEGORY_BROWSABLE);
+      intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      intent.setData(Uri.parse(url));
+      context.startActivity(intent);
+    } catch (Exception ignored) {
+      Toast.makeText(context, context.getString(R.string.error_no_browser), Toast.LENGTH_SHORT).show();
+    }
   }
 
   // 获取解码器是否支持

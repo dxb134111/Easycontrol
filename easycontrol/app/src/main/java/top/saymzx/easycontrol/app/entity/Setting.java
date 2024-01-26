@@ -2,10 +2,30 @@ package top.saymzx.easycontrol.app.entity;
 
 import android.content.SharedPreferences;
 
+import java.util.UUID;
+
 public final class Setting {
   private final SharedPreferences sharedPreferences;
 
   private final SharedPreferences.Editor editor;
+
+  public boolean getIsActive() {
+    return sharedPreferences.getBoolean("isActive", false);
+  }
+
+  public void setIsActive(boolean value) {
+    editor.putBoolean("isActive", value);
+    editor.apply();
+  }
+
+  public String getActiveKey() {
+    return sharedPreferences.getString("activeKey", "");
+  }
+
+  public void setActiveKey(String value) {
+    editor.putString("activeKey", value);
+    editor.apply();
+  }
 
   public String getDefaultLocale() {
     return sharedPreferences.getString("defaultLocale", "");
@@ -115,12 +135,12 @@ public final class Setting {
     editor.apply();
   }
 
-  public boolean getDefaultMiniOnOutside() {
-    return sharedPreferences.getBoolean("defaultMiniOnOutside", false);
+  public boolean getAutoMiniOnOutside() {
+    return sharedPreferences.getBoolean("autoMiniOnOutside", false);
   }
 
-  public void setDefaultMiniOnOutside(boolean value) {
-    editor.putBoolean("defaultMiniOnOutside", value);
+  public void setAutoMiniOnOutside(boolean value) {
+    editor.putBoolean("autoMiniOnOutside", value);
     editor.apply();
   }
 
@@ -131,6 +151,14 @@ public final class Setting {
   public void setDefaultDevice(String value) {
     editor.putString("defaultDevice", value);
     editor.apply();
+  }
+
+  public String getLocalUUID() {
+    if (!sharedPreferences.contains("UUID")) {
+      editor.putString("UUID", UUID.randomUUID().toString());
+      editor.apply();
+    }
+    return sharedPreferences.getString("UUID", "");
   }
 
   public Setting(SharedPreferences sharedPreferences) {

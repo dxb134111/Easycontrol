@@ -10,6 +10,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Pair;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -92,13 +93,30 @@ public class FullActivity extends Activity implements SensorEventListener {
     fullActivity.buttonHome.setOnClickListener(v -> clientView.controlPacket.sendKeyEvent(3, 0));
     fullActivity.buttonSwitch.setOnClickListener(v -> clientView.controlPacket.sendKeyEvent(187, 0));
     fullActivity.buttonMore.setOnClickListener(v -> changeBarView());
-    fullActivity.buttonNavBar.setOnClickListener(v -> setNavBarHide(fullActivity.navBar.getVisibility() == View.GONE));
+    fullActivity.buttonNavBar.setOnClickListener(v -> {
+      setNavBarHide(fullActivity.navBar.getVisibility() == View.GONE);
+      changeBarView();
+    });
     fullActivity.buttonMini.setOnClickListener(v -> clientView.changeToMini());
     fullActivity.buttonFullExit.setOnClickListener(v -> clientView.changeToSmall());
     fullActivity.buttonClose.setOnClickListener(v -> clientView.onClose.run());
-    fullActivity.buttonLight.setOnClickListener(v -> clientView.controlPacket.sendLightEvent(1));
-    fullActivity.buttonLightOff.setOnClickListener(v -> clientView.controlPacket.sendLightEvent(0));
-    fullActivity.buttonPower.setOnClickListener(v -> clientView.controlPacket.sendPowerEvent());
+    fullActivity.buttonLight.setOnClickListener(v -> {
+      clientView.controlPacket.sendLightEvent(Display.STATE_ON);
+      changeBarView();
+    });
+    fullActivity.buttonLightOff.setOnClickListener(v -> {
+      clientView.controlPacket.sendLightEvent(Display.STATE_UNKNOWN);
+      changeBarView();
+    });
+    fullActivity.buttonPower.setOnClickListener(v -> {
+      clientView.controlPacket.sendPowerEvent();
+      changeBarView();
+    });
+    fullActivity.buttonLock.setOnClickListener(v -> {
+      lockOrientation = !lockOrientation;
+      fullActivity.buttonLock.setImageResource(lockOrientation ? R.drawable.unlock : R.drawable.lock);
+      changeBarView();
+    });
   }
 
   // 导航栏隐藏
@@ -116,11 +134,12 @@ public class FullActivity extends Activity implements SensorEventListener {
     }));
   }
 
+  private boolean lockOrientation = false;
   private int lastOrientation = -1;
 
   @Override
   public void onSensorChanged(SensorEvent sensorEvent) {
-    if (Sensor.TYPE_ACCELEROMETER != sensorEvent.sensor.getType()) return;
+    if (lockOrientation || Sensor.TYPE_ACCELEROMETER != sensorEvent.sensor.getType()) return;
     float[] values = sensorEvent.values;
     float x = values[0];
     float y = values[1];
@@ -147,8 +166,11 @@ public class FullActivity extends Activity implements SensorEventListener {
     fullActivity.editText.requestFocus();
     fullActivity.editText.setInputType(InputType.TYPE_NULL);
     fullActivity.editText.setOnKeyListener((v, keyCode, event) -> {
-      if (event.getAction() == KeyEvent.ACTION_DOWN) clientView.controlPacket.sendKeyEvent(event.getKeyCode(), event.getMetaState());
-      return true;
+      if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode != KeyEvent.KEYCODE_VOLUME_UP && keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
+        clientView.controlPacket.sendKeyEvent(event.getKeyCode(), event.getMetaState());
+        return true;
+      }
+      return false;
     });
   }
 }
